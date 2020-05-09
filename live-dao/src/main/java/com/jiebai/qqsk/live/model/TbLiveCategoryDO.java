@@ -16,7 +16,7 @@ public class TbLiveCategoryDO {
     private Integer weight;
 
     /**
-     * 是否可用
+     * 是否可用  测试
 1:可用
 0:禁用
      */
