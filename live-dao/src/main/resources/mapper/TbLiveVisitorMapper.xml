@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiebai.qqsk.live.dao.TbLiveVisitorMapper">
+    <resultMap id="BaseResultMap" type="com.jiebai.qqsk.live.model.TbLiveVisitorDO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="room_id" jdbcType="INTEGER" property="roomId"/>
+        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="ext" jdbcType="LONGVARCHAR" property="ext"/>
+    </resultMap>
+    <select id="getTbUserByUserId" resultType="com.jiebai.qqsk.live.model.TbUserDO">
+        select user_id as userId,nickname,headimgurl,shop_name as shopName from tb_user where user_id = #{userId}
+    </select>
+    <select id="getVisitorByRoomId" resultMap="BaseResultMap">
+        select * from tb_live_visitor where room_id = #{roomId} order by gmt_create desc
+    </select>
+    <select id="getTodayVisitors" resultType="java.lang.Integer">
+        SELECT IFNULL(COUNT(*),0) from tb_live_visitor t where t.room_id in(SELECT b.id from tb_live_room b where
+        b.live_start BETWEEN CAST(SYSDATE()AS DATE) and
+        CAST(SYSDATE()AS DATE) + INTERVAL 1 DAY)
+    </select>
+    <select id="getRandForChatRomm" resultType="java.lang.Integer">
+        SELECT floor(RAND()*(SELECT MAX(id) FROM tb_live_visitor))
+    </select>
+
+    <select id="getRandVisitors" resultType="map">
+        SELECT t.user_id as userId,b.nickname as nickName FROM tb_live_visitor t LEFT JOIN tb_user b on t.user_id = b.user_id WHERE
+        t.id >= #{rand} and (b.nickname is NOT NULL and b.nickname!='') GROUP BY userId ORDER BY t.id LIMIT 0,#{limit}
+    </select>
+
+<!--
+    <select id="getAllRandVisitors" resultType="map">
+        SELECT t.user_id as userId,b.nickname as nickName FROM tb_live_visitor t LEFT JOIN tb_user b on t.user_id = b.user_id WHERE
+        (b.nickname is NOT NULL and b.nickname!='') GROUP BY userId ORDER BY t.id
+    </select>
+-->
+
+    <select id="getAllRandVisitors" resultType="map">
+        SELECT user_id as userId,nickname as nickName from tb_user where gmt_modified is not null and nickname is not null and nickname!=''
+        ORDER BY gmt_modified LIMIT 0,2000
+    </select>
+
+</mapper>

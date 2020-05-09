@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiebai.qqsk.live.dao.TbLiveRoomMapper">
+    <resultMap id="BaseResultMap" type="com.jiebai.qqsk.live.model.TbLiveRoomDO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="stream_key" jdbcType="VARCHAR" property="streamKey"/>
+        <result column="stream_url" jdbcType="VARCHAR" property="streamUrl"/>
+        <result column="stream_fname" jdbcType="VARCHAR" property="streamFname"/>
+        <result column="stream_flvfname" jdbcType="VARCHAR" property="streamFlvFname"/>
+        <result column="im_id" jdbcType="VARCHAR" property="imId"/>
+        <result column="cover" jdbcType="VARCHAR" property="cover"/>
+        <result column="state" jdbcType="TINYINT" property="state"/>
+        <result column="appoint_start" jdbcType="TIMESTAMP" property="appointStart"/>
+        <result column="appoint_end" jdbcType="TIMESTAMP" property="appointEnd"/>
+        <result column="live_start" jdbcType="TIMESTAMP" property="liveStart"/>
+        <result column="live_end" jdbcType="TIMESTAMP" property="liveEnd"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="category" jdbcType="INTEGER" property="category"/>
+        <result column="visitor_num" jdbcType="INTEGER" property="visitorNum"/>
+        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <result column="live_user_id" jdbcType="INTEGER" property="liveUserId"/>
+        <result column="praise_count" jdbcType="INTEGER" property="praiseCount"/>
+        <result column="is_deleted" jdbcType="INTEGER" property="isDeleted"/>
+        <result column="ext" jdbcType="LONGVARCHAR" property="ext"/>
+        <result column="is_public" jdbcType="INTEGER" property="isPublic"/>
+        <result column="rank" jdbcType="INTEGER" property="rank"/>
+        <result column="back_time" jdbcType="VARCHAR" property="backTime"/>
+        <result column="nickname" jdbcType="VARCHAR" property="liveUserNickName"/>
+        <result column="mark" jdbcType="VARCHAR" property="mark" />
+        <result column="open_type" jdbcType="VARCHAR" property="openType"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, stream_key, stream_url, stream_flvfname, stream_fname, im_id, cover, state, appoint_start,
+        appoint_end, live_start, live_end, title, category, visitor_num, gmt_create, gmt_modified,
+        live_user_id, praise_count, is_deleted, ext, is_public
+    </sql>
+
+    <update id="updateRank15BackLive">
+        update tb_live_room set rank = -3
+        where state = 0 and is_deleted = 0
+        and live_end &gt; #{beforeDate}
+        and back_time &lt; '00:15:00'
+    </update>
+
+    <update id="updateRankById">
+        update tb_live_room set rank = #{rank}
+        where id = #{roomId}
+    </update>
+
+    <select id="getAllRoom" resultMap="BaseResultMap">
+        select * from tb_live_room as r left join tb_live_category as c  on r.category = c.`name`
+        where  r.is_deleted = 0 and r.is_public = 1 and r.visitor_num >= #{visitorNum }
+        <if test='category !=null and category != ""'>
+            and c.`name` = #{category}
+        </if>
+        ORDER BY r.rank DESC, r.gmt_create DESC, r.visitor_num DESC, r.state DESC, r.id DESC
+    </select>
+
+    <select id="getNotDeleteRoomList" resultMap="BaseResultMap">
+        select * from tb_live_room as r left join tb_live_category as c  on r.category = c.`name`
+        where  r.is_deleted = 0
+        <if test='category !=null and category != "" '>
+            and c.`name` = #{category}
+        </if>
+        ORDER BY r.rank DESC, r.visitor_num DESC, r.state DESC, r.id DESC
+    </select>
+
+    <select id="getRoomVisitorNum" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select visitor_num from tb_live_room where id=#{roomId}
+    </select>
+
+    <select id="getByRoomId" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select * from tb_live_room where is_deleted=0 and id=#{roomId}
+    </select>
+
+    <select id="getPraisesByLiveUserId" resultType="java.lang.Integer">
+        SELECT IFNULL(SUM(praise_count),0) from tb_live_room  where live_user_id = #{userId}
+    </select>
+
+    <select id="selectUserLastLiveInfo" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_live_room where live_user_id = #{userId} order by
+        appoint_start desc limit 1
+    </select>
+
+    <select id="selectFollowUserLastLiveInfo" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_live_room
+        where live_user_id = #{userId} and is_public = 1 and is_deleted = 0
+        order by appoint_start desc limit 1
+    </select>
+
+    <select id="selectDiscoverListByUserList" resultMap="BaseResultMap">
+         select * from tb_live_room where
+         live_user_id in
+        <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+         and is_deleted = 0 and is_public = 1 ORDER BY rank DESC,  visitor_num DESC, state DESC, id DESC
+    </select>
+
+    <insert id="insertAndReturnId" parameterType="com.jiebai.qqsk.live.model.TbLiveRoomDO" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into tb_live_room
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="streamKey != null">
+                stream_key,
+            </if>
+            <if test="streamUrl != null">
+                stream_url,
+            </if>
+            <if test="streamFname != null">
+                stream_fname,
+            </if>
+            <if test="imId != null">
+                im_id,
+            </if>
+            <if test="cover != null">
+                cover,
+            </if>
+            <if test="appointStart != null">
+                appoint_start,
+            </if>
+            <if test="appointEnd != null">
+                appoint_end,
+            </if>
+            <if test="liveStart != null">
+                live_start,
+            </if>
+            <if test="liveEnd != null">
+                live_end,
+            </if>
+            <if test="title != null">
+                title,
+            </if>
+            <if test="category != null">
+                category,
+            </if>
+            <if test="visitorNum != null">
+                visitor_num,
+            </if>
+            <if test="gmtCreate != null">
+                gmt_create,
+            </if>
+            <if test="gmtModified != null">
+                gmt_modified,
+            </if>
+            <if test="liveUserId != null">
+                live_user_id,
+            </if>
+            <if test="praiseCount != null">
+                praise_count,
+            </if>
+            <if test="isDeleted != null">
+                is_deleted,
+            </if>
+            <if test="ext != null">
+                ext,
+            </if>
+            <if test="isPublic != null">
+                is_public
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="streamKey != null">
+                #{streamKey},
+            </if>
+            <if test="streamUrl != null">
+                #{streamUrl},
+            </if>
+            <if test="streamFname != null">
+                #{streamFname},
+            </if>
+            <if test="imId != null">
+                #{imId},
+            </if>
+            <if test="cover != null">
+                #{cover},
+            </if>
+            <if test="appointStart != null">
+                #{appointStart},
+            </if>
+            <if test="appointEnd != null">
+                #{appointEnd},
+            </if>
+            <if test="liveStart != null">
+                #{liveStart},
+            </if>
+            <if test="liveEnd != null">
+                #{liveEnd},
+            </if>
+            <if test="title != null">
+                #{title},
+            </if>
+            <if test="category != null">
+                #{category},
+            </if>
+            <if test="visitorNum != null">
+                #{visitorNum},
+            </if>
+            <if test="gmtCreate != null">
+                #{gmtCreate},
+            </if>
+            <if test="gmtModified != null">
+                #{gmtModified},
+            </if>
+            <if test="liveUserId != null">
+                #{liveUserId},
+            </if>
+            <if test="praiseCount != null">
+                #{praiseCount},
+            </if>
+            <if test="isDeleted != null">
+                #{isDeleted},
+            </if>
+            <if test="ext != null">
+                #{ext},
+            </if>
+            <if test="isPublic != null">
+                #{isPublic}
+            </if>
+        </trim>
+    </insert>
+
+    <select id="getRoomListForManager" resultMap="BaseResultMap"
+            parameterType="com.jiebai.qqsk.live.model.TbLiveRoomDO">
+        SELECT t.*,d.nickname,c.mark FROM tb_live_room t LEFT JOIN tb_user d on t.live_user_id=d.user_id left join tb_live_category c on t.category = c.name
+        <where>
+            t.is_deleted = 0
+            <if test="liveUserId != null">
+                AND t.live_user_id = #{liveUserId}
+            </if>
+            <if test="state != null">
+                AND t.state = #{state}
+            </if>
+            <if test="isDeleted != null">
+                AND t.is_deleted = #{isDeleted}
+            </if>
+            <if test="isPublic != null">
+                AND t.is_public = #{isPublic}
+            </if>
+            <if test="liveUserNickName != null and liveUserNickName !=''">
+                AND d.nickname LIKE CONCAT('%',#{liveUserNickName},'%')
+            </if>
+            <if test="title != null and title !=''">
+                AND t.title LIKE CONCAT('%',#{title},'%')
+            </if>
+            <if test='category !=null and category != ""'>
+                and c.`name` = #{category}
+            </if>
+        </where>
+        order by t.id desc
+    </select>
+
+    <select id="getHeadSearchList" resultMap="BaseResultMap">
+        SELECT t.*,d.nickname FROM tb_live_room t LEFT JOIN tb_user d on t.live_user_id=d.user_id
+        <where>
+            <if test="search != null and search !=''">
+                (d.nickname LIKE CONCAT('%',#{search},'%')
+            </if>
+            <if test="search != null and search !=''">
+                or t.title LIKE CONCAT('%',#{search},'%'))
+            </if>
+        </where>
+        and is_public = 1 and is_deleted = 0 ORDER BY  state DESC, rank DESC, id DESC
+    </select>
+
+    <select id="getRecommendList" resultMap="BaseResultMap">
+        SELECT * FROM tb_live_room t where (t.state = 2 or t.rank &gt;0 )
+        and is_public = 1 and is_deleted = 0 ORDER BY  state DESC, rank DESC, id DESC
+    </select>
+
+    <select id="getLiveRoomByCategryId" resultType="integer">
+        select count(r.id) from tb_live_room as r, tb_live_category as c where r.category = c.`name` and c.id = #{id}
+    </select>
+
+    <select id="getOpenLivesByUserId" resultType="java.lang.Integer">
+        SELECT IFNULL(count(*),0) from tb_live_room  where live_user_id = #{userId} and is_public = 1 and is_deleted = 0
+    </select>
+
+    <select id="selectPublicLiveRoomByUserId" resultMap="BaseResultMap">
+        select * from tb_live_room where
+        live_user_id = #{userId} and is_public = 1 and is_deleted = 0
+        order by state desc, gmt_create desc;
+    </select>
+</mapper>

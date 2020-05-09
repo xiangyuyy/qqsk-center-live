@@ -1,0 +1,51 @@
+buildscript {
+    ext {
+        lombokVersion = "1.16.20"
+        hibernateValidatorVersion = "6.0.17.Final"
+        pageHelperVersion = "5.1.10"
+        jacksonDatabindVersion = "2.9.9.1"
+    }
+    repositories {
+        jcenter()
+    }
+}
+
+apply plugin: 'maven-publish'
+
+group = 'com.jiebai.qqsk.remote' // 会按照group生成.m2下的目录路径
+project.version = project.remote_version // 指定版本
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId project.group
+            artifactId project.name
+            version project.version
+            //若是war包，就写components.web,若是jar包，就写components.java
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            if (version.endsWith('-SNAPSHOT')) {
+                url = "http://nexus.51buyin.com/nexus/content/repositories/jiebai-snapshot/"
+            } else {
+                url = "http://nexus.51buyin.com/nexus/content/repositories/jiebai-release/"
+            }
+            credentials {
+                username project.nexus_username
+                password project.nexus_password
+            }
+        }
+    }
+}
+
+dependencies {
+
+    compile(
+            "org.projectlombok:lombok:${lombokVersion}",
+            "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}",
+            "com.github.pagehelper:pagehelper:${pageHelperVersion}",
+            "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
+    )
+}

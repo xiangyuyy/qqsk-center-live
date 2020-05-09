@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiebai.qqsk.live.dao.TbLivePopTransactionMapper">
+  <resultMap id="BaseResultMap" type="com.jiebai.qqsk.live.model.TbLivePopTransactionDO">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="pop_transaction_id" jdbcType="BIGINT" property="popTransactionId" />
+    <result column="order_no" jdbcType="VARCHAR" property="orderNo" />
+    <result column="refund_no" jdbcType="VARCHAR" property="refundNo" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="money" jdbcType="DECIMAL" property="money" />
+    <result column="balance" jdbcType="DECIMAL" property="balance" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
+    <result column="gmt_modify" jdbcType="TIMESTAMP" property="gmtModify" />
+  </resultMap>
+
+  <select id="selectSumMoneyByUserId" resultType="java.math.BigDecimal">
+    select IFNULL(sum(money), 0.00) from tb_live_pop_transaction where user_id = #{userId} and status = 1
+  </select>
+
+</mapper>

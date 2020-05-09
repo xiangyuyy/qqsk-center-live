@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiebai.qqsk.live.dao.TbLivePopShopMapper">
+    <resultMap id="BaseResultMap" type="com.jiebai.qqsk.live.model.TbLivePopShopDO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="promise_money" jdbcType="DECIMAL" property="promiseMoney"/>
+        <result column="account_remain" jdbcType="DECIMAL" property="accountRemain"/>
+        <result column="is_open_live" jdbcType="INTEGER" property="isOpenLive"/>
+        <result column="is_open_popshop" jdbcType="INTEGER" property="isOpenPopShop"/>
+        <result column="is_close_live" jdbcType="INTEGER" property="isCloseLive"/>
+        <result column="is_close_popshop" jdbcType="TINYINT" property="isClosePopShop"/>
+        <result column="popshop_name" jdbcType="VARCHAR" property="popshopName"/>
+        <result column="popshop_type" jdbcType="VARCHAR" property="popshopType"/>
+        <result column="popshop_category" jdbcType="INTEGER" property="popshopCategory"/>
+        <result column="province_name" jdbcType="VARCHAR" property="provinceName"/>
+        <result column="city_name" jdbcType="VARCHAR" property="cityName"/>
+        <result column="district_name" jdbcType="VARCHAR" property="districtName"/>
+        <result column="street_address" jdbcType="VARCHAR" property="streetAddress"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="email" jdbcType="VARCHAR" property="email"/>
+        <result column="id_card_front_photo" jdbcType="VARCHAR" property="idCardFrontPhoto"/>
+        <result column="id_card_back_photo" jdbcType="VARCHAR" property="idCardBackPhoto"/>
+        <result column="id_card_hand_photo" jdbcType="VARCHAR" property="idCardHandPhoto"/>
+        <result column="user_name" jdbcType="VARCHAR" property="userName"/>
+        <result column="id_card" jdbcType="VARCHAR" property="idCard"/>
+        <result column="enterprise_name" jdbcType="VARCHAR" property="enterpriseName"/>
+        <result column="business_license" jdbcType="VARCHAR" property="businessLicense"/>
+        <result column="combination_of_three_certificates" jdbcType="INTEGER"
+                property="combinationOfThreeCertificates"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="gmt_close" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <result column="gmt_open_popshop" jdbcType="TIMESTAMP" property="gmtOpenPopShop"/>
+        <result column="nickname" jdbcType="VARCHAR" property="nickname"/>
+        <result column="login_mobile" jdbcType="VARCHAR" property="loginMobile"/>
+        <result column="user_member_role" jdbcType="VARCHAR" property="userMemberRole"/>
+    </resultMap>
+
+
+    <select id="getByUserId" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select * from tb_live_popshop where user_id=#{userId}
+    </select>
+
+    <select id="selectAccountRemain" resultType="java.math.BigDecimal">
+        select account_remain from tb_live_popshop where user_id = #{userId}
+    </select>
+
+    <update id="updateAccountRemainById">
+        update tb_live_popshop set account_remain = account_remain + #{money} where id = #{id}
+    </update>
+
+    <select id="getListForManager" resultMap="BaseResultMap"
+            parameterType="com.jiebai.qqsk.live.model.TbLivePopShopDO">
+        SELECT t.*,d.nickname,d.user_member_role,d.login_mobile FROM tb_live_popshop t LEFT JOIN tb_user d on
+        t.user_id=d.user_id
+        <where>
+            <if test="nickname != null and nickname !=''">
+                (d.nickname LIKE CONCAT('%',#{nickname},'%') or d.user_id LIKE CONCAT('%',#{nickname},'%') or
+                d.login_mobile LIKE CONCAT('%',#{nickname},'%'))
+            </if>
+            <if test="userMemberRole != null and userMemberRole !=''">
+                AND d.user_member_role = #{userMemberRole}
+            </if>
+            <if test="isOpenPopShop != null">
+                AND t.is_open_popshop = #{isOpenPopShop}
+            </if>
+            <if test="popshopType != null and popshopType !=''">
+                AND t.popshop_type = #{popshopType}
+            </if>
+            <if test="status != null and status !=''">
+                AND t.status = #{status}
+            </if>
+            <if test="gmtCreateBegin != null">
+                AND ( t.gmt_create >= #{gmtCreateBegin} )
+            </if>
+            <if test="gmtCreateEnd != null">
+                AND ( t.gmt_create  <![CDATA[<=]]>  #{gmtCreateEnd} )
+            </if>
+            <if test="gmtOpenPopShopBegin != null">
+                AND ( t.gmt_open_popshop >= #{gmtOpenPopShopBegin} )
+            </if>
+            <if test="gmtOpenPopShopEnd != null">
+                AND ( t.gmt_open_popshop  <![CDATA[<=]]>  #{gmtOpenPopShopEnd} )
+            </if>
+        </where>
+        order by t.id desc
+    </select>
+
+    <select id="getLivePopShopInfor" resultMap="BaseResultMap">
+        SELECT t.*,d.nickname,d.user_member_role,d.login_mobile FROM tb_live_popshop t LEFT JOIN tb_user d on
+        t.user_id=d.user_id where t.id = #{popShopId}
+    </select>
+</mapper>

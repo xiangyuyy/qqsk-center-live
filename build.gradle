@@ -1,0 +1,81 @@
+// 所有子项目的通用配置
+subprojects {
+
+    apply plugin: 'java'
+    apply plugin: 'idea'
+
+    project.version = project.remote_version
+
+    // JVM 版本号要求
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    // java编译的时候缺省状态下会因为中文字符而失败
+    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
+    repositories {
+        mavenLocal() // 使用本地仓库
+        maven { url "http://maven.aliyun.com/nexus/content/repositories/central/" }
+        mavenCentral()
+        maven { url = "http://nexus.51buyin.com/nexus/content/repositories/jiebai-release/" }
+        maven { url = "http://nexus.51buyin.com/nexus/content/repositories/jiebai-snapshot/" }
+    }
+
+    jar {
+        enabled = true
+        manifest {
+            attributes("Implementation-Title": "Gradle")
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            // 采用快照版本声明的依赖缓存1秒钟
+            cacheChangingModulesFor 1, 'seconds'
+        }
+
+        // 所有需要忽略的包定义在此
+        all*.exclude group: 'commons-logging'
+        all*.exclude group: 'log4j'
+//        all*.exclude group: 'commons-beanutils', module: 'commons-beanutils'
+    }
+
+    dependencies {
+        // 通用依赖
+        compile(
+                "org.projectlombok:lombok:1.18.8",
+        )
+        annotationProcessor "org.projectlombok:lombok:1.18.8"
+        /*
+        testCompile(
+                "org.springframework.boot:spring-boot-starter-test"
+        )
+        */
+
+        // 依赖maven中不存在的jar
+        ext.jarTree = fileTree(dir: 'libs', include: '**/*.jar')
+        ext.rootProjectLibs = new File(rootProject.rootDir, 'libs').getAbsolutePath()
+        ext.jarTree += fileTree(dir: rootProjectLibs, include: '**/*.jar')
+
+        compile jarTree
+
+        // 测试依赖
+        testCompile(
+                "junit:junit:4.12"
+        )
+    }
+
+    // 显示当前项目下所有用于 compile 的 jar.
+    task listJars(description: 'Display all compile jars.') doLast {
+        configurations.compile.each { File file -> println file.name }
+    }
+
+    /* 显示当前项目下所有用于 compile 的 jar.
+
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
+    */
+}

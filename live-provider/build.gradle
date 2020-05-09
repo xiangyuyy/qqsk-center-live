@@ -1,0 +1,45 @@
+buildscript {
+    ext {
+        springBootVersion = "2.1.6.RELEASE"
+        jiebaiFrameworkVersion = "1.0.4.RELEASE"
+        qqskGoodsApiVersion = "1.2.5.RELEASE"
+        qqskDiscoverApiVersion = "1.0.7.RELEASE"
+        qqskOrderApiVersion = "1.0.15.RELEASE"
+        rocketmqStarterVersion = "2.0.3"
+        qqskMessageApiVersion = "1.1.1.RELEASE"
+        qqskMemberApiVersion="1.2.7.RELEASE"
+    }
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+archivesBaseName = 'live-provider'
+version = project.provider_version
+apply plugin: 'org.springframework.boot'
+
+// 在这个段落中你可以声明编译后的Jar文件信息
+jar {
+    baseName = 'live-provider'
+}
+
+dependencies {
+    compile project(':live-remote')
+    compile project(':live-dao')
+    compile(group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.9',
+            "com.jiebai.qqsk.remote:goods-remote:${qqskGoodsApiVersion}",
+            "com.jiebai.qqsk.remote:discover-remote:${qqskDiscoverApiVersion}",
+            "com.jiebai.qqsk.remote:message-remote:${qqskMessageApiVersion}",
+            "com.jiebai.qqsk.remote:order-remote:${qqskOrderApiVersion}",
+            "com.jiebai.qqsk.remote:member-remote:${qqskMemberApiVersion}",
+            "org.apache.rocketmq:rocketmq-spring-boot-starter:${rocketmqStarterVersion}",
+            "com.jiebai:framework-service:${jiebaiFrameworkVersion}"
+    )
+    testCompile(
+            "org.springframework.boot:spring-boot-starter-test:${springBootVersion}",
+            "junit:junit:4.12"
+    )
+}

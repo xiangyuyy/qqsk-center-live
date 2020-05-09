@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiebai.qqsk.live.dao.TbLiveStarMapper">
+    <resultMap id="BaseResultMap" type="com.jiebai.qqsk.live.model.TbLiveStarDO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="user_tags" jdbcType="VARCHAR" property="userTags"/>
+        <result column="is_deleted" jdbcType="INTEGER" property="isDeleted"/>
+        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, user_tags, is_deleted, gmt_modified
+    </sql>
+
+</mapper>
